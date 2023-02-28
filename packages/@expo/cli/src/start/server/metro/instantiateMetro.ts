@@ -104,6 +104,11 @@ export async function instantiateMetroAsync(
     watch: isWatchEnabled(),
   });
 
+  if (inspectorProxy) {
+    // @ts-expect-error Seems that we need to wait until the server is listening
+    inspectorProxy.setServerAddress(server.address());
+  }
+
   if (attachToServer) {
     // Expo SDK 44 and lower
     const { messageSocket, eventsSocket } = attachToServer(server);
