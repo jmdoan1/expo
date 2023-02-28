@@ -13,6 +13,7 @@ import { env } from '../../../utils/env';
 import { createDevServerMiddleware } from '../middleware/createDevServerMiddleware';
 import { getPlatformBundlers } from '../platformBundlers';
 import { MetroTerminalReporter } from './MetroTerminalReporter';
+import { createInspectorProxy, withInspectorProxy } from './inspector-proxy';
 import { importExpoMetroConfigFromProject, importMetroFromProject } from './resolveFromProject';
 import { withMetroMultiPlatformAsync } from './withMetroMultiPlatform';
 
@@ -73,6 +74,12 @@ export async function instantiateMetroAsync(
     watchFolders: metroConfig.watchFolders,
   });
 
+  let inspectorProxy;
+  if (env.EXPO_USE_NETWORK_INSPECTOR) {
+    metroConfig = withInspectorProxy(metroConfig, projectRoot);
+    inspectorProxy = createInspectorProxy(projectRoot);
+  }
+
   const customEnhanceMiddleware = metroConfig.server.enhanceMiddleware;
   // @ts-ignore can't mutate readonly config
   metroConfig.server.enhanceMiddleware = (metroMiddleware: any, server: Metro.Server) => {
@@ -83,10 +90,16 @@ export async function instantiateMetroAsync(
   };
 
   middleware.use(createDebuggerTelemetryMiddleware(projectRoot, exp));
+  if (inspectorProxy) {
+    middleware.use(inspectorProxy.httpEndpointMiddleware);
+  }
 
   const server = await Metro.runServer(metroConfig, {
     hmrEnabled: true,
-    websocketEndpoints,
+    websocketEndpoints: {
+      ...websocketEndpoints,
+      ...(inspectorProxy?.createWebSocketEndpoints() ?? {}),
+    },
     // @ts-expect-error Property was added in 0.73.4, remove this statement when updating Metro
     watch: isWatchEnabled(),
   });
