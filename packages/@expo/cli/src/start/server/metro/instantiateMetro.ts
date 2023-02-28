@@ -75,7 +75,7 @@ export async function instantiateMetroAsync(
   });
 
   let inspectorProxy;
-  if (env.EXPO_USE_NETWORK_INSPECTOR) {
+  if (env.EXPO_USE_CUSTOM_INSPECTOR_PROXY) {
     metroConfig = withInspectorProxy(metroConfig, projectRoot);
     inspectorProxy = createInspectorProxy(projectRoot);
   }
