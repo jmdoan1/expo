@@ -74,7 +74,7 @@ export async function instantiateMetroAsync(
     watchFolders: metroConfig.watchFolders,
   });
 
-  let inspectorProxy;
+  let inspectorProxy: null | ReturnType<typeof createInspectorProxy> = null;
   if (env.EXPO_USE_CUSTOM_INSPECTOR_PROXY) {
     metroConfig = withInspectorProxy(metroConfig, projectRoot);
     inspectorProxy = createInspectorProxy(projectRoot);
@@ -102,12 +102,11 @@ export async function instantiateMetroAsync(
     },
     // @ts-expect-error Property was added in 0.73.4, remove this statement when updating Metro
     watch: isWatchEnabled(),
+    onReady(server) {
+      // @ts-expect-error `server.address()` returns the address only after `.listen` is called
+      inspectorProxy?.setServerAddress(server.address());
+    },
   });
-
-  if (inspectorProxy) {
-    // @ts-expect-error Seems that we need to wait until the server is listening
-    inspectorProxy.setServerAddress(server.address());
-  }
 
   if (attachToServer) {
     // Expo SDK 44 and lower
