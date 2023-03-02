@@ -103,8 +103,7 @@ export async function instantiateMetroAsync(
     // @ts-expect-error Property was added in 0.73.4, remove this statement when updating Metro
     watch: isWatchEnabled(),
     onReady(server) {
-      // @ts-expect-error `server.address()` returns the address only after `.listen` is called
-      inspectorProxy?.setServerAddress(server.address());
+      inspectorProxy?.onServerReady(server);
     },
   });
 
