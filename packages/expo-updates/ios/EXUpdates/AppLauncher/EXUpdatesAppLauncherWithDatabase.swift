@@ -286,7 +286,7 @@ public class EXUpdatesAppLauncherWithDatabase: NSObject, EXUpdatesAppLauncher {
   }
 
   private func checkExistence(ofAsset asset: EXUpdatesAsset, withLocalUrl assetLocalUrl: URL, completion: @escaping (Bool) -> Void) {
-    EXUpdatesFileDownloader.assetFilesQueue().async {
+    EXUpdatesFileDownloader.assetFilesQueue.async {
       let exists = FileManager.default.fileExists(atPath: assetLocalUrl.path)
       self.launcherQueue.async {
         completion(exists)
@@ -309,7 +309,7 @@ public class EXUpdatesAppLauncherWithDatabase: NSObject, EXUpdatesAppLauncher {
     }
 
     if let matchingAsset = matchingAsset, matchingAsset.mainBundleFilename != nil {
-      EXUpdatesFileDownloader.assetFilesQueue().async {
+      EXUpdatesFileDownloader.assetFilesQueue.async {
         guard let bundlePath = EXUpdatesUtils.path(forBundledAsset: matchingAsset) else {
           self.launcherQueue.async {
             completion(
@@ -364,30 +364,30 @@ public class EXUpdatesAppLauncherWithDatabase: NSObject, EXUpdatesAppLauncher {
       return
     }
 
-    EXUpdatesFileDownloader.assetFilesQueue().async {
+    EXUpdatesFileDownloader.assetFilesQueue.async {
       self.downloader.downloadFile(
-        from: assetUrl,
+        fromURL: assetUrl,
         verifyingHash: asset.expectedHash,
         toPath: assetLocalUrl.path,
         extraHeaders: asset.extraRequestHeaders ?? [:]
       ) { _, response, base64URLEncodedSHA256Hash in
-        self.launcherQueue.async {
-          if let response = response as? HTTPURLResponse {
-            asset.headers = response.allHeaderFields as? [String: Any]
+          self.launcherQueue.async {
+            if let response = response as? HTTPURLResponse {
+              asset.headers = response.allHeaderFields as? [String: Any]
+            }
+            asset.contentHash = base64URLEncodedSHA256Hash
+            asset.downloadTime = Date()
+            completion(nil, asset, assetLocalUrl)
           }
-          asset.contentHash = base64URLEncodedSHA256Hash
-          asset.downloadTime = Date()
-          completion(nil, asset, assetLocalUrl)
+        } errorBlock: { error in
+          self.launcherQueue.async {
+            completion(error, asset, assetLocalUrl)
+          }
         }
-      } errorBlock: { error in
-        self.launcherQueue.async {
-          completion(error, asset, assetLocalUrl)
-        }
-      }
     }
   }
 
   private lazy var downloader: EXUpdatesFileDownloader = {
-    EXUpdatesFileDownloader(updatesConfig: config)
+    EXUpdatesFileDownloader(config: config)
   }()
 }
