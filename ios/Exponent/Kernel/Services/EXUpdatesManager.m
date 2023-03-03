@@ -7,12 +7,12 @@
 #import "EXUpdatesDatabaseManager.h"
 #import "EXUpdatesManager.h"
 
-#import <EXUpdates/EXUpdatesFileDownloader.h>
 #import <EXUpdates/EXUpdatesRemoteAppLoader.h>
 
 #import <React/RCTBridge.h>
 
 @import EXManifests;
+@import EXUpdates;
 
 NSString * const EXUpdatesEventName = @"Expo.nativeUpdatesEvent";
 NSString * const EXUpdatesErrorEventType = @"error";

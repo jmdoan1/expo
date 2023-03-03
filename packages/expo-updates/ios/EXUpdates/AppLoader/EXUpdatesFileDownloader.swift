@@ -496,7 +496,7 @@ public final class EXUpdatesFileDownloader: NSObject, URLSessionDataDelegate {
       return
     }
 
-    let bodyManifestString = updateResponseDictionary["mainfestString"]
+    let bodyManifestString = updateResponseDictionary["manifestString"]
     let bodySignature = updateResponseDictionary["signature"]
     let isSignatureInBody = bodyManifestString != nil && bodySignature != nil
 

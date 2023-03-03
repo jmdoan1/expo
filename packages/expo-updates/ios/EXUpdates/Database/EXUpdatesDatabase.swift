@@ -287,7 +287,7 @@ public final class EXUpdatesDatabase: NSObject {
     }
 
     let updateSql = "UPDATE updates SET status = ?1, keep = 1 WHERE id = ?2;"
-    _ = try execute(sql: updateSql, withArgs: [update.status, update.updateId])
+    _ = try execute(sql: updateSql, withArgs: [update.status.rawValue, update.updateId])
   }
 
   public func markUpdateAccessed(_ update: EXUpdatesUpdate) throws {
